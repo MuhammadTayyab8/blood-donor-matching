@@ -202,6 +202,15 @@ Create a `.env` file inside the `backend/` directory:
 # backend/.env
 OPENROUTER_API_KEY="your-openrouter-api-key"
 DATABASE_URL="sqlite:///./blood_donation.db"
+
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USERNAME="username"
+SMTP_PASSWORD="password"
+
+SMTP_SENDER="sender-email"
+
+GEMINI_API_KEY="generate-apikey-from-aistudio"
 ```
 *(Note: To test without OpenRouter, you can configure another model or LiteLLM provider in `backend/app/agents.py`)*
 

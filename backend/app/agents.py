@@ -22,15 +22,20 @@ from app.mcp_server import (
 )
 
 # Reuse the model configurations from the template
-GEMINI_MODEL = Gemini(
-    model="gemini-2.5-flash",
-    retry_options=types.HttpRetryOptions(attempts=3),
-)
+# GEMINI_MODEL = Gemini(
+#     model="gemini-2.5-flash",
+#     retry_options=types.HttpRetryOptions(attempts=3),
+# )
+
+# GEMINI_MODEL = LiteLlm(
+#     model="openai/gpt-oss-120b:free",  # Replace with any OpenRouter model identifier
+#     api_key=os.getenv("OPENROUTER_API_KEY"),
+#     api_base="https://openrouter.ai/api/v1"
+# )
+
 
 GEMINI_MODEL = LiteLlm(
-    model="openai/gpt-oss-120b:free",  # Replace with any OpenRouter model identifier
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    api_base="https://openrouter.ai/api/v1"
+    model="cohere/command-a-03-2025"
 )
 
 # GEMINI_MODEL = LiteLlm(
@@ -48,9 +53,10 @@ intake_agent = Agent(
     You are the Intake Agent. Your job is to process incoming blood requests from users.
     1. Parse the user's message to extract the patient ID (generate one like PT-XXXXX if not present), blood group needed (e.g. O-, B+), hospital name, number of units required, requester_email, and urgency/urgency level (Critical, High, Medium, Low).
     2. Use the requester email from the provided user context if the user did not explicitly supply it in the message.
-    3. If any required field is missing, ask the user for the missing information and do not call `create_blood_request`.
-    4. Only call `create_blood_request` when all required details are present.
-    5. Log your action using `log_ai_activity` after creating the request.
+    3. If the email is available in the chat request, preserve it and use it for confirmation/tracking notification.
+    4. If any required field is missing, ask the user for the missing information clearly and directly; do not ask the user to "transfer" or to confirm handoff.
+    5. Only call `create_blood_request` when all required details are present.
+    6. After calling `create_blood_request`, return a short confirmation message and log your action using `log_ai_activity`.
     """,
     tools=[create_blood_request, log_ai_activity],
 )
@@ -108,13 +114,15 @@ root_agent = Agent(
     You are the Root Agent, the primary coordinator for the RedLine AI Blood Donation Dispatcher.
     Your goal is to coordinate the intake, matching, outreach, and update workflow.
     
-    1. If the user is creating a new request, send the user message to the `intake_agent` first.
-    2. Do not create or save a request until all required details are present: requester email, blood group, hospital location, units needed, and urgency.
-    3. Once a request is created successfully, immediately route to the `matcher_agent` to find compatible donors.
-    4. Then route to the `outreach_agent` to launch Wave 1 outreach to matched donors.
-    5. Finally, route to the `conversation_agent` and provide the requester a clear progress update and the request ID.
-    6. If any information is missing, ask the user for the missing fields and do not end the chat.
-    7. Always include the requested blood group, units, hospital, and estimated next step in the response.
+    1. When a user submits a blood request or follows up with request details, automatically route the message to the `intake_agent` first.
+    2. Do not ask the user whether they want to transfer to intake. Handle all intake routing internally.
+    3. Do not create or save a request until all required details are present: requester email, blood group, hospital location, units needed, and urgency.
+    4. If any required information is missing, let the `intake_agent` ask only for the missing fields and keep the conversation open.
+    5. Once `intake_agent` creates the request successfully, immediately route to the `matcher_agent` to find compatible donors.
+    6. After matching donors, route to the `outreach_agent` to launch Wave 1 outreach.
+    7. Finally, route to the `conversation_agent` and provide the requester a clear progress update and the request ID.
+    8. If the user already has all required information, proceed without extra handoff prompts.
+    9. Always include the requested blood group, units, hospital, and estimated next step in the response.
     """,
     sub_agents=[intake_agent, matcher_agent, outreach_agent, conversation_agent],
 )
@@ -192,7 +200,11 @@ async def process_chat_message(user_message: str, user_email: str, session_id: s
         # Session already exists in memory block, skip creation step safely
         pass
     
-    context_text = f"User Identity (Email): {user_email}\nMessage Context: {user_message}"
+    context_text = (
+        f"Requester Email: {user_email}\n"
+        f"Message Context: {user_message}\n"
+        f"Use the requester email from this chat context when creating or confirming the request."
+    )
     formatted_message = types.Content(
         role="user",
         parts=[types.Part.from_text(text=context_text)]
@@ -204,14 +216,27 @@ async def process_chat_message(user_message: str, user_email: str, session_id: s
         session_id=session_id,
         user_id=user_email
     ):
-        if event.author == "root_agent" and event.content:
+        if event.content:
             for part in event.content.parts:
                 if hasattr(part, "text") and part.text:
                     response_text += part.text
                 elif isinstance(part, str):
                     response_text += part
-                    
-    return response_text if response_text else "AI request processed successfully."
+
+    if response_text.strip():
+        return response_text.strip()
+
+    email_note = (
+        f" A confirmation email will be sent to {user_email} once the request is created."
+        if user_email
+        else " A confirmation email will be sent once the request is created."
+    )
+
+    return (
+        "Thanks! I processed your input. "
+        "If anything is missing, please provide the blood group, hospital, units needed, or urgency so I can continue."
+        f"{email_note}"
+    )
 
 
 

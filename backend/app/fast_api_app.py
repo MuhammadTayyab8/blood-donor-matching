@@ -787,6 +787,7 @@ def handle_outreach_response(
                 donor_list.append({
                     "name": outreach.donor.name,
                     "blood_group": outreach.donor.blood_group,
+                    "phone": outreach.donor.phone,
                 })
             if request.requester_email:
                 send_requester_fulfillment_summary_email(

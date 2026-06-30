@@ -363,7 +363,7 @@ def send_requester_fulfillment_summary_email(requester_email: str, request_id: i
     subject = f"🎉 Request #{request_id} Fulfilled - Donor Details"
     donor_rows = "".join([
         f"<div class='card-row'><span class='label'>Donor:</span><span class='value'>{d['name']} ({d['blood_group']})</span></div>\n"
-        f"<div class='card-row'><span class='label'>Contact:</span><span class='value'>{d.get('phone', 'N/A')}</span></div>" for d in donor_list
+        f"<div class='card-row'><span class='label'>Contact:</span><span class='value'>{d['phone']}</span></div>" for d in donor_list
     ])
 
     content = f"""

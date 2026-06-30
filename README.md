@@ -25,6 +25,10 @@ RedLine addresses these issues by replacing manual effort with a **collaborative
 
 ---
 
+![alt text](image-2.png)
+
+---
+
 ## 3. System Architecture & Flows
 
 The RedLine architecture separates the operational Next.js dashboard from the FastAPI backend, coordinating the agent workflow via Google ADK.

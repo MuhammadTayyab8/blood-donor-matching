@@ -33,36 +33,36 @@ The RedLine architecture separates the operational Next.js dashboard from the Fa
 
 ```mermaid
 graph TD
-    User([Requester / Operator]) -->|Submits emergency request| Frontend[Next.js Web App]
-    Frontend -->|POST /api/requests or POST /api/chat| Backend[FastAPI App]
-    Backend -->|Invokes with user intent| RootAgent[Root Agent (Orchestrator)]
+    User(["Requester / Operator"]) -->|Submits emergency request| Frontend["Next.js Web App"]
+    Frontend -->|POST /api/requests or POST /api/chat| Backend["FastAPI App"]
+    Backend -->|Invokes with user intent| RootAgent["Root Agent (Orchestrator)"]
 
     subgraph ADK Multi-Agent Container
-        RootAgent -->|Routes parsing task| IntakeAgent[Intake Agent]
-        RootAgent -->|Routes donor matching| MatcherAgent[Matcher Agent]
-        RootAgent -->|Routes notification wave| OutreachAgent[Outreach Agent]
-        RootAgent -->|Routes progress updates| ConversationAgent[Conversation Agent]
+        RootAgent -->|Routes parsing task| IntakeAgent["Intake Agent"]
+        RootAgent -->|Routes donor matching| MatcherAgent["Matcher Agent"]
+        RootAgent -->|Routes notification wave| OutreachAgent["Outreach Agent"]
+        RootAgent -->|Routes progress updates| ConversationAgent["Conversation Agent"]
     end
 
     subgraph FastMCP Tooling Layer
-        IntakeAgent -->|Calls| ToolCreateRequest[create_blood_request]
-        MatcherAgent -->|Calls| ToolSearchDonors[search_donors]
+        IntakeAgent -->|Calls| ToolCreateRequest["create_blood_request"]
+        MatcherAgent -->|Calls| ToolSearchDonors["search_donors"]
         OutreachAgent -->|Calls| ToolSearchDonors
-        OutreachAgent -->|Calls| ToolGetSettings[get_system_settings]
-        OutreachAgent -->|Calls| ToolSendEmail[send_outreach_email]
-        OutreachAgent -->|Calls| ToolSendWhatsApp[send_whatsapp_outreach]
+        OutreachAgent -->|Calls| ToolGetSettings["get_system_settings"]
+        OutreachAgent -->|Calls| ToolSendEmail["send_outreach_email"]
+        OutreachAgent -->|Calls| ToolSendWhatsApp["send_whatsapp_outreach"]
         
-        IntakeAgent -.->|Logs AI activities & events| ToolLogActivity[log_ai_activity]
-        MatcherAgent -.->|Logs AI activities & events| ToolLogEvent[log_timeline_event]
+        IntakeAgent -.->|Logs AI activities & events| ToolLogActivity["log_ai_activity"]
+        MatcherAgent -.->|Logs AI activities & events| ToolLogEvent["log_timeline_event"]
         OutreachAgent -.->|Logs AI activities & events| ToolLogActivity
         ConversationAgent -.->|Logs AI activities & events| ToolLogEvent
     end
 
     subgraph Data & Communication Layer
-        ToolCreateRequest -->|Inserts / Updates| DB[(SQLite Database)]
+        ToolCreateRequest -->|Inserts / Updates| DB[("SQLite Database")]
         ToolSearchDonors -->|Queries compatible donors| DB
-        ToolSendEmail -->|Dispatches HTML email| MockEmail[Mock Email Inbox]
-        ToolSendWhatsApp -->|Dispatches text message| MockWhatsApp[Mock WhatsApp Logs]
+        ToolSendEmail -->|Dispatches HTML email| MockEmail["Mock Email Inbox"]
+        ToolSendWhatsApp -->|Dispatches text message| MockWhatsApp["Mock WhatsApp Logs"]
     end
 ```
 
@@ -76,9 +76,6 @@ RedLine utilizes a clean separation of concerns where agents reason and decide, 
 
 - **`root_agent` (Orchestrator):** The primary entry point. It receives the user input and programmatically routes messages to specialized sub-agents based on the request state.
 - **`intake_agent`:** Parses the natural language message context. If vital information (blood group, hospital, units, requester email) is missing, it asks follow-up questions. Once complete, it creates the request.
-
-![alt text](image-1.png)
-
 - **`matcher_agent`:** Triggered immediately after request creation. It calls matching tools to rank compatible donors in proximity to the hospital.
 - **`outreach_agent`:** Evaluates system settings (e.g., wave multipliers) and coordinates wave-based outreach alerts. If the donor pool is exhausted without enough units, it escalates the request urgency to "Critical".
 - **`conversation_agent`:** Keeps the requester and operators informed by summarizing agent actions and providing the request tracking ID.

@@ -1,6 +1,6 @@
-# 🩸 RedLine: AI-Driven Emergency Blood Donation Dispatcher
+# 🩸 BloodLink AI: AI-Driven Emergency Blood Donation Dispatcher
 
-RedLine is an automated, AI-powered emergency blood donation coordination platform designed for the **Agents for Good** track of the Kaggle Vibe Coding Capstone Project. By leveraging a multi-agent system powered by **Google ADK** (Agent Development Kit) and an **MCP** (Model Context Protocol) tool layer, RedLine automates the entire emergency blood dispatch pipeline: from incoming request intake to donor matchmaking, wave-based communications, and post-donation verification.
+BloodLink AI is an automated, AI-powered emergency blood donation coordination platform designed for the **Agents for Good** track of the Kaggle Vibe Coding Capstone Project. By leveraging a multi-agent system powered by **Google ADK** (Agent Development Kit) and an **MCP** (Model Context Protocol) tool layer, BloodLink AI automates the entire emergency blood dispatch pipeline: from incoming request intake to donor matchmaking, wave-based communications, and post-donation verification.
 
 ---
 
@@ -14,9 +14,9 @@ Emergency blood donation coordination is a critical, time-sensitive process wher
 
 ---
 
-## 2. Solution: RedLine AI Dispatcher
+## 2. Solution: BloodLink AI AI Dispatcher
 
-RedLine addresses these issues by replacing manual effort with a **collaborative multi-agent framework** that coordinates the emergency workflow:
+BloodLink AI addresses these issues by replacing manual effort with a **collaborative multi-agent framework** that coordinates the emergency workflow:
 1. **Automated Request Intake:** A natural language AI chat interface validates requirements (blood group, units, location, email, and urgency).
 2. **Intelligent Matchmaking:** An agent searches the database to match donor groups and ranks them by geographical proximity (Haversine distance) and eligibility (excluding donors who donated in the last 90 days).
 3. **Controlled Wave-Based Outreach:** Instead of spamming all compatible donors, the system launches staggered outreach waves (via simulated Email and WhatsApp), adjusting the contact pool based on system settings and urgency.
@@ -31,7 +31,7 @@ RedLine addresses these issues by replacing manual effort with a **collaborative
 
 ## 3. System Architecture & Flows
 
-The RedLine architecture separates the operational Next.js dashboard from the FastAPI backend, coordinating the agent workflow via Google ADK.
+The BloodLink AI architecture separates the operational Next.js dashboard from the FastAPI backend, coordinating the agent workflow via Google ADK.
 
 ### High-Level Interaction Flow
 
@@ -74,7 +74,7 @@ graph TD
 
 ## 4. Detailed Agent & Tool Design
 
-RedLine utilizes a clean separation of concerns where agents reason and decide, and MCP tools perform read/write actions on the system state.
+BloodLink AI utilizes a clean separation of concerns where agents reason and decide, and MCP tools perform read/write actions on the system state.
 
 ### ADK Agents (Defined in `backend/app/agents.py`)
 

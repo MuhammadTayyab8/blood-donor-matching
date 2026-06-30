@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: oklch(0.55 0.22 25.1); /* Brand red: #DC2626 */
+  --color-success: oklch(0.69 0.19 152.0); /* Success green: #10B981 */
+  --color-warning: oklch(0.77 0.17 76.4); /* Warning yellow: #F59E0B */
+  --color-background: oklch(0.98 0.00 0.0); /* Canvas background: #FAFAFA */
+  --color-card: oklch(1.00 0.00 0.0); /* Card/surface: #FFFFFF */
+  --color-foreground: oklch(0.19 0.01 262.1); /* Body/headings: #111827 */
+  --color-muted-foreground: oklch(0.55 0.01 260.6); /* Muted text: #6B7280 */
+  --color-border: oklch(0.93 0.00 0.0); /* Hairline borders: #E5E7EB */
+  
+  --font-sans: var(--font-geist-sans), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "JetBrains Mono", monospace;
+}
+
+:root {
+  --background: oklch(0.98 0.00 0.0);
+  --foreground: oklch(0.19 0.01 262.1);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
